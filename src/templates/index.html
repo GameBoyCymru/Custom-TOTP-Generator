@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom TOTP Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Custom TOTP Generator</h1>
+        <form id="qrForm" method="POST" action="/">
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="account_name" required>
+            <label for="issuer">Issuer:</label>
+            <input type="text" id="issuer" name="issuer" required>
+            <button type="submit">Generate QR Code</button>
+        </form>
+        <div id="qrCodeContainer">
+            <h2>Your QR Code:</h2>
+            <img id="qrCode" src="" alt="QR Code will appear here" style="display:none;">
+        </div>
+        <div id="manualImportContainer" style="display:none;">
+            <h2>Manual Import:</h2>
+            <input type="text" id="totpLink" readonly>
+            <button id="copyButton">Copy to Clipboard</button>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('qrForm');
+        form.onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Log the response data
+                if (data.qr_code_url) {
+                    const qrCodeImg = document.getElementById('qrCode');
+                    qrCodeImg.src = `${data.qr_code_url}?t=${new Date().getTime()}`;
+                    qrCodeImg.style.display = 'block';
+                } else {
+                    console.error('QR code URL not found in response');
+                }
+                if (data.otp_auth_uri) {
+                    const totpLink = document.getElementById('totpLink');
+                    totpLink.value = data.otp_auth_uri;
+                    document.getElementById('manualImportContainer').style.display = 'block';
+                } else {
+                    console.error('TOTP link not found in response');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        };
+
+        const copyButton = document.getElementById('copyButton');
+        copyButton.onclick = function() {
+            const totpLink = document.getElementById('totpLink');
+            totpLink.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard');
+        };
+    </script>
+</body>
+</html>
