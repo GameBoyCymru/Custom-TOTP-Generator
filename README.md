@@ -1,7 +1,9 @@
-# Project Title: Custom 2FA TOTP Generator
+# Project Title: Custom TOTP Generator
 
 ## Description
-This project is a web application that generates a two-factor authentication (2FA) TOTP seed based on user input. Users can enter a description and issuer name, and the application will generate a unique seed and display the corresponding QR code for importing to supported applications.
+This project is a web application that generates a TOTP seed based on user input. Users can enter a description and issuer name, and the application will generate a unique seed and display the corresponding QR code for importing to supported applications.
+
+This is ideal if you would like to create custom seeds for your own services, knowing that you are the only one creating the seed, without any potential for secret copying of the seed.
 
 ## Project Structure
 ```
