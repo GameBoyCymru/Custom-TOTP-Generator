@@ -6,8 +6,24 @@ import qrcode
 import os
 import hashlib
 import time
+import threading
 
 app = Flask(__name__)
+
+def delete_file_after_delay(file_path, delay):
+    def delete_file():
+        time.sleep(delay)
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                app.logger.info(f"Deleted file: {file_path}")
+            else:
+                app.logger.warning(f"File not found: {file_path}")
+        except Exception as e:
+            app.logger.error(f"Error deleting file: {e}")
+
+    thread = threading.Thread(target=delete_file)
+    thread.start()
 
 def generate_custom_seed(input_data):
     current_time = str(time.time()).encode()
@@ -41,6 +57,9 @@ def index():
             
             qr_code_path = os.path.join(app.static_folder, '2fa_qr_code.png')
             generate_qr_code(otp_auth_uri, qr_code_path)
+            
+            # Schedule file deletion after 3 seconds
+            delete_file_after_delay(qr_code_path, 1)
             
             return jsonify({
                 'qr_code_url': url_for('static', filename='2fa_qr_code.png'),

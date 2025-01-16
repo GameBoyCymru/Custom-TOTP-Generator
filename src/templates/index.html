@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom TOTP Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
     <div class="container">
         <h1>Custom TOTP Generator</h1>
@@ -26,45 +28,59 @@
             <button id="copyButton">Copy to Clipboard</button>
         </div>
     </div>
-    <script>
+        <script>
         const form = document.getElementById('qrForm');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const qrCode = document.getElementById('qrCode');
+        const totpLink = document.getElementById('totpLink');
+        const manualImportContainer = document.getElementById('manualImportContainer');
+    
         form.onsubmit = function(event) {
             event.preventDefault();
             const formData = new FormData(form);
+    
+            // Disable the button and add the disabled class
+            submitButton.disabled = true;
+            submitButton.classList.add('disabled');
+    
+            // Clear previous QR code and manual import link
+            qrCode.style.display = 'none';
+            qrCode.src = '';
+            manualImportContainer.style.display = 'none';
+            totpLink.value = '';
+    
             fetch('/', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); // Log the response data
                 if (data.qr_code_url) {
-                    const qrCodeImg = document.getElementById('qrCode');
-                    qrCodeImg.src = `${data.qr_code_url}?t=${new Date().getTime()}`;
-                    qrCodeImg.style.display = 'block';
-                } else {
-                    console.error('QR code URL not found in response');
-                }
-                if (data.otp_auth_uri) {
-                    const totpLink = document.getElementById('totpLink');
+                    // Append a unique query parameter to force reload
+                    qrCode.src = data.qr_code_url + '?t=' + new Date().getTime();
+                    qrCode.style.display = 'block';
+    
                     totpLink.value = data.otp_auth_uri;
-                    document.getElementById('manualImportContainer').style.display = 'block';
-                } else {
-                    console.error('TOTP link not found in response');
+                    manualImportContainer.style.display = 'block';
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                // Re-enable the button and remove the disabled class after 2 seconds
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('disabled');
+                }, 2000);
             });
         };
-
+    
         const copyButton = document.getElementById('copyButton');
         copyButton.onclick = function() {
-            const totpLink = document.getElementById('totpLink');
             totpLink.select();
             document.execCommand('copy');
             alert('Copied to clipboard');
         };
     </script>
 </body>
+
 </html>
