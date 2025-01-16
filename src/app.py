@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, url_for
 import hashlib
 import base64
-import random
 import qrcode
 import os
 import hashlib
