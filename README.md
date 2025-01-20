@@ -37,7 +37,4 @@ web-project
 
 ## Dependencies
 - Flask
-- qrcode
-- hashlib
-- base64
-- random
+- qrcode[pil]
